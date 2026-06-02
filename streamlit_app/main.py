@@ -29,14 +29,20 @@ uploaded_resumes = st.file_uploader(
     type=["pdf", "docx"],
     accept_multiple_files=True
 )
+jd_file = st.file_uploader(
+    "Upload Job Description File (.txt)",
+    type=["txt"]
+)
 
 job_description = st.text_area(
-    "Paste Job Description Here",
+    "Paste Job Description Here (Optional)",
     height=250
 )
 
 if st.button("Rank Candidates"):
+    if jd_file is not None:
 
+        job_description = jd_file.read().decode("utf-8")
     if not uploaded_resumes:
         st.warning("Please upload at least one resume.")
 
@@ -56,7 +62,7 @@ if st.button("Rank Candidates"):
 
             with open(file_path, "wb") as f:
                 f.write(file.getbuffer())
-
+                
         cleaned_jd = clean_job_description(
             job_description
         )
@@ -67,6 +73,14 @@ if st.button("Rank Candidates"):
         )
 
         df = pd.DataFrame(results)
+        csv = df.to_csv(index=False)
+
+        st.download_button(
+            label="📥 Download Results CSV",
+            data=csv,
+            file_name="candidate_rankings.csv",
+            mime="text/csv"
+        )
 
         if not df.empty:
 
